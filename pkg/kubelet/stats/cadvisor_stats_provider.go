@@ -303,7 +303,7 @@ func isPodManagedContainer(cinfo *cadvisorapiv2.ContainerInfo) bool {
 }
 
 // getCadvisorPodInfoFromPodUID returns a pod cgroup information by matching the podUID with its CgroupName identifier base name
-func getCadvisorPodInfoFromPod(podUID types.UID, infos map[string]cadvisorapiv2.ContainerInfo) *cadvisorapiv2.ContainerInfo {
+func getCadvisorPodInfoFromPodUIDOLD(podUID types.UID, infos map[string]cadvisorapiv2.ContainerInfo) *cadvisorapiv2.ContainerInfo {
 	for key, info := range infos {
 		if cm.IsSystemdStyleName(key) {
 			// Convert to internal cgroup name and take the last component only.
@@ -322,7 +322,7 @@ func getCadvisorPodInfoFromPod(podUID types.UID, infos map[string]cadvisorapiv2.
 
 
 func getCadvisorPodInfoFromPodUID(podUID types.UID, infos map[string]cadvisorapiv2.ContainerInfo) *cadvisorapiv2.ContainerInfo {
-	
+
 
 
 	return nil
