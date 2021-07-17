@@ -500,3 +500,8 @@ func TestCadvisorImagesFsStats(t *testing.T) {
 
 	mockCadvisor.AssertExpectations(t)
 }
+
+func TestGetCadvisorPodInfoFromPodUID(t *testing.T) {
+
+
+}

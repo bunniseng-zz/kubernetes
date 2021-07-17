@@ -231,6 +231,7 @@ func (p *cadvisorStatsProvider) ListPodCPUAndMemoryStats() ([]statsapi.PodStats,
 		podUID := types.UID(podStats.PodRef.UID)
 		// Lookup the pod-level cgroup's CPU and memory stats
 		podInfo := getCadvisorPodInfoFromPodUID(podUID, allInfos)
+
 		if podInfo != nil {
 			cpu, memory := cadvisorInfoToCPUandMemoryStats(podInfo)
 			podStats.CPU = cpu
@@ -302,7 +303,7 @@ func isPodManagedContainer(cinfo *cadvisorapiv2.ContainerInfo) bool {
 }
 
 // getCadvisorPodInfoFromPodUID returns a pod cgroup information by matching the podUID with its CgroupName identifier base name
-func getCadvisorPodInfoFromPodUID(podUID types.UID, infos map[string]cadvisorapiv2.ContainerInfo) *cadvisorapiv2.ContainerInfo {
+func getCadvisorPodInfoFromPod(podUID types.UID, infos map[string]cadvisorapiv2.ContainerInfo) *cadvisorapiv2.ContainerInfo {
 	for key, info := range infos {
 		if cm.IsSystemdStyleName(key) {
 			// Convert to internal cgroup name and take the last component only.
@@ -316,6 +317,14 @@ func getCadvisorPodInfoFromPodUID(podUID types.UID, infos map[string]cadvisorapi
 			return &info
 		}
 	}
+	return nil
+}
+
+
+func getCadvisorPodInfoFromPodUID(podUID types.UID, infos map[string]cadvisorapiv2.ContainerInfo) *cadvisorapiv2.ContainerInfo {
+	
+
+
 	return nil
 }
 
