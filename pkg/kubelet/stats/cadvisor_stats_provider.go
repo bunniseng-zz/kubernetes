@@ -18,12 +18,11 @@ package stats
 
 import (
 	"fmt"
+	cadvisorapiv2 "github.com/google/cadvisor/info/v2"
+	"k8s.io/klog/v2"
 	"path"
 	"sort"
 	"strings"
-
-	cadvisorapiv2 "github.com/google/cadvisor/info/v2"
-	"k8s.io/klog/v2"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -309,10 +308,12 @@ func getCadvisorPodInfoFromPodUIDOLD(podUID types.UID, infos map[string]cadvisor
 			// Convert to internal cgroup name and take the last component only.
 			internalCgroupName := cm.ParseSystemdToCgroupName(key)
 			key = internalCgroupName[len(internalCgroupName)-1]
+
 		} else {
 			// Take last component only.
 			key = path.Base(key)
 		}
+
 		if cm.GetPodCgroupNameSuffix(podUID) == key {
 			return &info
 		}
@@ -320,11 +321,7 @@ func getCadvisorPodInfoFromPodUIDOLD(podUID types.UID, infos map[string]cadvisor
 	return nil
 }
 
-
 func getCadvisorPodInfoFromPodUID(podUID types.UID, infos map[string]cadvisorapiv2.ContainerInfo) *cadvisorapiv2.ContainerInfo {
-
-
-
 	return nil
 }
 

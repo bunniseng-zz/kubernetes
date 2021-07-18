@@ -17,10 +17,9 @@ limitations under the License.
 package stats
 
 import (
-	"testing"
-
 	cadvisorapiv2 "github.com/google/cadvisor/info/v2"
 	"github.com/stretchr/testify/assert"
+	"testing"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -501,7 +500,29 @@ func TestCadvisorImagesFsStats(t *testing.T) {
 	mockCadvisor.AssertExpectations(t)
 }
 
-func TestGetCadvisorPodInfoFromPodUID(t *testing.T) {
+func TestCadvisorGetCadvisorPodInfoFromPodUID(t *testing.T) {
+	const (
+		namespace = "test"
+		container = "container"
+	)
 
+	asrt := assert.New(t)
 
+	infos := map[string]cadvisorapiv2.ContainerInfo{
+		"/pod0":          getTestContainerInfo(1000, "pod0", namespace, container),
+		"/pod1":          getTestContainerInfo(2000, "pod1", namespace, container),
+		"/pod2.slice":    getTestContainerInfo(3000, "pod2", namespace, container),
+		"/pod3.slice":    getTestContainerInfo(4000, "pod3", namespace, container),
+		"/kubepods/pod4": getTestContainerInfo(5000, "pod4", namespace, container),
+		"/kubepods/pod5": getTestContainerInfo(6000, "pod5", namespace, container),
+	}
+
+	info := getCadvisorPodInfoFromPodUID("0", infos)
+	asrt.NotNil(info)
+
+	info = getCadvisorPodInfoFromPodUID("3", infos)
+	asrt.NotNil(info)
+
+	info = getCadvisorPodInfoFromPodUID("5", infos)
+	asrt.NotNil(info)
 }
