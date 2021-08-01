@@ -461,8 +461,6 @@ func convertCGroupPathKeyToPodUIDKey(key string) string {
 		key = path.Base(key)
 	}
 
-	fmt.Println(key)
-
 	// Return key with the pod prefix attached
 	return cm.GetPodCgroupNameSuffix(types.UID(key))
 }

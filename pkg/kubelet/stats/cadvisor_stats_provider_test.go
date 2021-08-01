@@ -526,3 +526,19 @@ func TestCadvisorGetCadvisorPodInfoFromPodUID(t *testing.T) {
 	info = getCadvisorPodInfoFromPodUID("5", infos)
 	asrt.NotNil(info)
 }
+
+func TestCadvisorConvertCGroupPathKeyToPodUIDKey(t *testing.T) {
+	asrt := assert.New(t)
+
+	key := "/kubepods/burstable/podf9e3a173-1470-451a-9ca2-58ddcd9fa78f/d8426b82582fbcfae16085bc794c49769d3a9648bd5463976aca4071f9342754"
+	converted := convertCGroupPathKeyToPodUIDKey(key)
+	asrt.Equal("podd8426b82582fbcfae16085bc794c49769d3a9648bd5463976aca4071f9342754", converted)
+
+	key = "/kubepods.slice"
+	converted = convertCGroupPathKeyToPodUIDKey(key)
+	asrt.Equal("podkubepods", converted)
+
+	key = "docker-daemon"
+	converted = convertCGroupPathKeyToPodUIDKey(key)
+	asrt.Equal("poddocker-daemon", converted)
+}
