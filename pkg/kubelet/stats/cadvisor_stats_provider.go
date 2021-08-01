@@ -86,7 +86,7 @@ func (p *cadvisorStatsProvider) ListPodStats() ([]statsapi.PodStats, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get imageFs info: %v", err)
 	}
-	infos, err := getCadvisorContainerInfo(p.cadvisor)
+	infos, err := getCadvisorContainerInfo(p.cadvisor, CGroupPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get container info from cadvisor: %v", err)
 	}
@@ -181,7 +181,7 @@ func (p *cadvisorStatsProvider) ListPodStatsAndUpdateCPUNanoCoreUsage() ([]stats
 
 // ListPodCPUAndMemoryStats returns the cpu and memory stats of all the pod-managed containers.
 func (p *cadvisorStatsProvider) ListPodCPUAndMemoryStats() ([]statsapi.PodStats, error) {
-	infos, err := getCadvisorContainerInfo(p.cadvisor)
+	infos, err := getCadvisorContainerInfo(p.cadvisor, CGroupPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get container info from cadvisor: %v", err)
 	}
@@ -408,12 +408,21 @@ func hasMemoryAndCPUInstUsage(info *cadvisorapiv2.ContainerInfo) bool {
 	return cstat.CpuInst.Usage.Total != 0 && cstat.Memory.RSS != 0
 }
 
-func getCadvisorContainerInfo(ca cadvisor.Interface) (map[string]cadvisorapiv2.ContainerInfo, error) {
+type KeyType int
+
+const (
+	CGroupPath KeyType = iota
+	PodUID
+)
+
+// getCadvisorContainerInfo returns all v2.ContainerInfo's
+func getCadvisorContainerInfo(ca cadvisor.Interface, kt KeyType) (map[string]cadvisorapiv2.ContainerInfo, error) {
 	infos, err := ca.ContainerInfoV2("/", cadvisorapiv2.RequestOptions{
 		IdType:    cadvisorapiv2.TypeName,
 		Count:     2, // 2 samples are needed to compute "instantaneous" CPU
 		Recursive: true,
 	})
+
 	if err != nil {
 		if _, ok := infos["/"]; ok {
 			// If the failure is partial, log it and return a best-effort
@@ -423,5 +432,37 @@ func getCadvisorContainerInfo(ca cadvisor.Interface) (map[string]cadvisorapiv2.C
 			return nil, fmt.Errorf("failed to get root cgroup stats: %v", err)
 		}
 	}
-	return infos, nil
+
+	// Remap the v2.ContainerInfo's map based on key type supplied by the caller
+	remappedInfos := make(map[string]cadvisorapiv2.ContainerInfo)
+	for k, v := range infos {
+		switch kt {
+		case CGroupPath:
+			// CGroupPath is the default key type that is used from the CAdvisor client
+			break
+		case PodUID:
+			// Convert keys from cgroup type to pod uid
+			k = convertCGroupPathKeyToPodUIDKey(k)
+		}
+		remappedInfos[k] = v
+	}
+
+	return remappedInfos, nil
+}
+
+// convertCGroupPathKeyToPodUIDKey converts a cgroup path key to pod uid key
+func convertCGroupPathKeyToPodUIDKey(key string) string {
+	if cm.IsSystemdStyleName(key) {
+		// Convert to internal cgroup name and take the last component only.
+		cGroupName := cm.ParseSystemdToCgroupName(key)
+		key = cGroupName[len(cGroupName)-1]
+	} else {
+		// Take the last segment as the pod uid
+		key = path.Base(key)
+	}
+
+	fmt.Println(key)
+
+	// Return key with the pod prefix attached
+	return cm.GetPodCgroupNameSuffix(types.UID(key))
 }

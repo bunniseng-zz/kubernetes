@@ -157,7 +157,7 @@ func (p *criStatsProvider) listPodStats(updateCPUNanoCoreUsage bool) ([]statsapi
 		containerMap[c.Id] = c
 	}
 
-	allInfos, err := getCadvisorContainerInfo(p.cadvisor)
+	allInfos, err := getCadvisorContainerInfo(p.cadvisor, CGroupPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch cadvisor stats: %v", err)
 	}
@@ -251,7 +251,7 @@ func (p *criStatsProvider) ListPodCPUAndMemoryStats() ([]statsapi.PodStats, erro
 		containerMap[c.Id] = c
 	}
 
-	allInfos, err := getCadvisorContainerInfo(p.cadvisor)
+	allInfos, err := getCadvisorContainerInfo(p.cadvisor, CGroupPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch cadvisor stats: %v", err)
 	}
