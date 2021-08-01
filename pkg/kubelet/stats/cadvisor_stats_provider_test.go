@@ -500,6 +500,13 @@ func TestCadvisorImagesFsStats(t *testing.T) {
 	mockCadvisor.AssertExpectations(t)
 }
 
+func TestCadvisorListPodStats(t *testing.T) {
+	/*
+	p := NewCadvisorStatsProvider(mockCadvisor, resourceAnalyzer, nil, nil, mockRuntime, mockStatus, NewFakeHostStatsProvider())
+	pods, err := p.ListPodStats()
+	*/
+}
+
 func TestCadvisorGetCadvisorPodInfoFromPodUID(t *testing.T) {
 	const (
 		namespace = "test"
